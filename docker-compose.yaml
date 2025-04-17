@@ -1,0 +1,40 @@
+services:
+  # Code Translation Service
+  mcp-translator:
+    build:
+      context: ./src/mcp-code-translator
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=translator
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./shared-data:/app/data
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  # DB Migration Service  
+  mcp-migration:
+    build:
+      context: ./src/mcp-db-migration
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_NAME=migration
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./shared-data:/app/data
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+    
+  # API Gateway (optional but recommended)
+  mcp-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mcp-translator
+      - mcp-migration
+    restart: unless-stopped
